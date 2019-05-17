@@ -119,7 +119,10 @@ def run_test_cnn_classification(model, batcher, sess):
     return right / all
 
 
-def main():
+def main(unused_argv):
+    if len(unused_argv) != 1:  # prints a message if you've entered flags incorrectly
+        raise Exception("Problem with flags: %s" % unused_argv)
+
     tf.logging.set_verbosity(tf.logging.INFO)  # choose what level of logging you want
     tf.logging.info('Starting running in %s mode...', (FLAGS.mode))
 
