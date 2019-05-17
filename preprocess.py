@@ -34,10 +34,10 @@ def main(opt):
             if len(review.split()) < 3:
                 continue
 
+            tokenized_review_str = mt.tokenize(review, return_str=True)
             if score == 3:
                 neutral_reviews.append(tokenized_review_str.lower())
             elif score == 1 or score == 5:
-                tokenized_review_str = mt.tokenize(review, return_str=True)
                 reviews.append(tokenized_review_str.lower())
                 scores.append(score)
 
@@ -60,7 +60,7 @@ def main(opt):
             print(file=f_classtest)
 
     with open(os.path.join(dir_name, "neutral.txt"), 'w', encoding='utf-8') as f_neutral:
-        for title in enumerate(neutral_reviews):
+        for idx, title in enumerate(neutral_reviews):
             score = 1
 
             json.dump(dict(score=score, headline=title), fp=f_neutral)
