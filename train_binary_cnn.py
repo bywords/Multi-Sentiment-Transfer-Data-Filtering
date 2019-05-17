@@ -1,12 +1,14 @@
 import os, time
 import util
 import numpy as np
-import tensorflow as tf
 from data import Vocab
-from batcher import TrainBatcher, TestBatcher
+from batcher import TrainBatcher, TestBatcher, NeutralBatcher
 from classifier import CNN
 from collections import namedtuple
 import tensorflow as tf
+import glob
+import json
+
 #import argparse
 
 # parser = argparse.ArgumentParser(description='train_binary_cnn.py')
@@ -20,6 +22,8 @@ FLAGS = tf.app.flags.FLAGS
 tf.app.flags.DEFINE_string('data_dir', 'data', 'Directory path to data')
 tf.app.flags.DEFINE_string('train_file', 'train.txt', 'Data file for training')
 tf.app.flags.DEFINE_string('test_file', 'test.txt', 'Data file for testing')
+tf.app.flags.DEFINE_string('neutral_file', 'neutral.txt', 'Data file for neutral')
+tf.app.flags.DEFINE_string('neutral_file_filtering', 'neutral_filtered.txt', 'Data file for testing')
 tf.app.flags.DEFINE_string('vocab_path', 'data/vocab.txt', 'Path expression to text vocabulary file.')
 
 # Important settings
@@ -119,6 +123,32 @@ def run_test_cnn_classification(model, batcher, sess):
     return right / all
 
 
+def read_data(path, target_score):
+    new_queue = []
+
+    filelist = glob.glob(path)  # get the list of datafiles
+    assert filelist, ('Error: Empty filelist at %s' % path)  # check filelist isn't empty
+    filelist = sorted(filelist)
+
+    with open(path, 'r', encoding='utf-8') as reader:
+        for string_ in reader:
+            dict_example = json.loads(string_)
+            headline = dict_example["headline"]
+            new_queue.append(headline)
+    return new_queue
+
+
+def filter_neutral_data(batcher, model, sess, hps):
+    with open(os.path.join(hps.data_dir, hps.neutral_file_filtering), 'w', encoding='utf-8') as f_filter:
+        batches = batcher.get_batches()
+
+        for step, current_batch in enumerate(batches):
+            headlines, scores = model.eval_with_score(sess, current_batch)
+            for idx, headline in enumerate(headlines):
+                sigmoid_score = scores[idx]
+                json.dump(dict(output=sigmoid_score, headline=headline), fp=f_filter)
+
+
 def main(unused_argv):
     if len(unused_argv) != 1:  # prints a message if you've entered flags incorrectly
         raise Exception("Problem with flags: %s" % unused_argv)
@@ -149,7 +179,8 @@ def main(unused_argv):
     vocab = Vocab(FLAGS.vocab_path, FLAGS.vocab_size)
 
     hparam_list = ['lr', 'adagrad_init_acc', 'rand_unif_init_mag', 'trunc_norm_init_std', 'max_grad_norm',
-                   'hidden_dim', 'emb_dim', 'batch_size', 'max_dec_steps', 'max_enc_steps', 'source_class', 'num_class']
+                   'hidden_dim', 'emb_dim', 'batch_size', 'max_dec_steps', 'max_enc_steps', 'source_class', 'num_class',
+                   'data_dir', 'train_file', 'test_file', 'neutral_file', 'neutral_file_filtering']
     hps_dict = {}
     for key, val in FLAGS.__flags.items():  # for each flag
         if key in hparam_list:  # if it's in the list
@@ -173,6 +204,11 @@ def main(unused_argv):
                              sess=sess_cnn_cls,
                              saver=saver_cnn_cls,
                              train_dir=train_dir_cnn_cls)
+
+    neutral_batcher = NeutralBatcher(hps_discriminator, vocab)
+    filter_neutral_data(batcher=neutral_batcher, model=cnn_classifier,
+                        sess=sess_cnn_cls, hps=hps_discriminator)
+
 
 
 if __name__ == '__main__':

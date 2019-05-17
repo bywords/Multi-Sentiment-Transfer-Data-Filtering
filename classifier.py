@@ -80,6 +80,7 @@ class CNN(object):
                 # b = tf.Variable(tf.constant(0.1, shape=[1, 2]), dtype=tf.float32)
 
                 logits = tf.nn.xw_plus_b(zd, W, b)
+                self.sigmoid_score = tf.nn.sigmoid(logits)
 
             losses = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=self.labels)
             self.global_step = tf.Variable(0, name='global_step', trainable=False)
@@ -146,3 +147,16 @@ class CNN(object):
             error_list.append(batch.headlines[i])
 
         return right, len(batch.labels), error_list, error_label
+
+    def eval_with_score(self, sess, batch):
+        """
+        Runs one evaluation iteration.
+        Returns a dictionary containing summaries, loss, global_step and (optionally) coverage loss.
+        """
+        feed_dict = self._make_test_feed_dict(batch)
+        to_return = {
+            'sigmoid_output': self.sigmoid_score
+        }
+        results = sess.run(to_return, feed_dict)
+
+        return batch.headlines, results['sigmoid_output']

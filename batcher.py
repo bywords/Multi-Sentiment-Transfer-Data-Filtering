@@ -126,6 +126,8 @@ class TrainBatcher(object):
                     continue
 
                 score = int(dict_example["score"])
+                if score == 2:
+                    score = 1
                 example = Example(headline=headline, label=score, vocab=self._vocab, hps=self._hps)
                 new_queue.append(example)
         return new_queue
@@ -176,8 +178,64 @@ class TestBatcher(object):
                     continue
 
                 score = int(dict_example["score"])
+                if score == 2:
+                    score = 1
+
                 example = Example(headline=headline, label=score, vocab=self._vocab, hps=self._hps)
                 new_queue.append(example)
         return new_queue
 
+
+class NeutralBatcher(object):
+
+    def __init__(self, hps, vocab):
+        self._vocab = vocab
+        self._hps = hps
+
+        self.example_queue = self.fill_example_queue(os.path.join(hps.data_dir,
+                                                                  hps.neutral_file))
+        self.batch = self.create_batches(shuffleis=True)
+
+    def create_batches(self, shuffleis=True):
+        all_batch = []
+
+        num_batches = int(len(self.example_queue) / self._hps.batch_size)
+        if shuffleis:
+            shuffle(self.example_queue)
+
+        for i in range(0, num_batches):
+            batch = self.example_queue[i * self._hps.batch_size:i * self._hps.batch_size + self._hps.batch_size]
+            all_batch.append(Batch(batch, self._hps, self._vocab))
+
+        return all_batch
+
+    def get_batches(self):
+        shuffle(self.batch)
+        return self.batch
+
+    def fill_example_queue(self, data_path):
+        new_queue = []
+
+        filelist = glob.glob(data_path)  # get the list of datafiles
+        assert filelist, ('Error: Empty filelist at %s' % data_path)  # check filelist isn't empty
+        for f in filelist:
+            reader = codecs.open(f, 'r', 'utf-8')
+            while True:
+                string_ = reader.readline()
+                if not string_:
+                    break
+
+                dict_example = json.loads(string_)
+                headline = dict_example["headline"]
+                if headline.strip() == "":
+                    continue
+
+                score = int(dict_example["score"])
+                if score != 1:
+                    print("There is neutral data in the file for neutral data.")
+                    exit()
+
+                example = Example(headline=headline, label=score, vocab=self._vocab, hps=self._hps)
+                new_queue.append(example)
+        return new_queue
 
