@@ -81,7 +81,7 @@ class CNN(object):
                 logits = tf.nn.xw_plus_b(zd, W, b)
                 self.sigmoid_score = tf.squeeze(tf.nn.sigmoid(logits))
 
-            losses = tf.nn.sigmoid_cross_entropy_with_logits(logits=logits.reshape(-1, ),
+            losses = tf.nn.sigmoid_cross_entropy_with_logits(logits=tf.reshape(logits, shape=(-1, )),
                                                              labels=self.labels)
             self.global_step = tf.Variable(0, name='global_step', trainable=False)
             self.loss = tf.reduce_mean(losses)
