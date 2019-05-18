@@ -163,4 +163,4 @@ class CNN(object):
         }
         results = sess.run(to_return, feed_dict)
 
-        return batch.headlines, results['sigmoid_output'][0]
+        return batch.headlines, results['sigmoid_output']

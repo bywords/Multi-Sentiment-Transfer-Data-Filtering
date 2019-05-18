@@ -93,7 +93,7 @@ def run_train_cnn_classifier(model, train_batcher, test_batcher, max_run_epoch, 
             if not np.isfinite(loss):
                 raise Exception("Loss is not finite. Stopping.")
             train_step = results['global_step']  # we need this to update our running average loss
-            if train_step % 100 == 0:
+            if train_step % 500 == 0:
                 t1 = time.time()
                 tf.logging.info('seconds for %d training cnn classifier step: %.3f ', train_step, (t1 - t0) / 100)
                 t0 = time.time()
