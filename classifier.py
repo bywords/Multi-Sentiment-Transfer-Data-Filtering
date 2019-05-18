@@ -26,7 +26,7 @@ class CNN(object):
             # define placeholders
             self._enc_batch = tf.placeholder(tf.int32, [self.batch_size, self.input_len], name='enc_batch')
             self._enc_lens = tf.placeholder(tf.int32, [self.batch_size], name='enc_lens')
-            self.labels = tf.placeholder(tf.int32,
+            self.labels = tf.placeholder(tf.float32,
                                          [self.batch_size],
                                          name='target_batch')
             self.cur_drop_rate = tf.placeholder(tf.float32)
@@ -78,10 +78,10 @@ class CNN(object):
                                     dtype=tf.float32, initializer=self.trunc_norm_init)
                 b = tf.get_variable('b', [1], dtype=tf.float32, initializer=self.trunc_norm_init)
 
-                logits = tf.nn.xw_plus_b(zd, W, b)
-                self.sigmoid_score = tf.squeeze(tf.nn.sigmoid(logits))
+                logits = tf.squeeze(tf.nn.xw_plus_b(zd, W, b))
+                self.sigmoid_score = tf.nn.sigmoid(logits)
 
-            losses = tf.nn.sigmoid_cross_entropy_with_logits(logits=tf.squeeze(logits),
+            losses = tf.nn.sigmoid_cross_entropy_with_logits(logits=logits,
                                                              labels=self.labels)
             self.global_step = tf.Variable(0, name='global_step', trainable=False)
             self.loss = tf.reduce_mean(losses)
