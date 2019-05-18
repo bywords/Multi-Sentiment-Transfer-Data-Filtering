@@ -81,10 +81,10 @@ class CNN(object):
                 logits = tf.nn.xw_plus_b(zd, W, b)
                 self.sigmoid_score = tf.squeeze(tf.nn.sigmoid(logits))
 
-            losses = tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=self.labels)
+            losses = tf.nn.sigmoid_cross_entropy_with_logits(logits=logits.reshape(-1, ),
+                                                             labels=self.labels)
             self.global_step = tf.Variable(0, name='global_step', trainable=False)
             self.loss = tf.reduce_mean(losses)
-            self.best_output = tf.argmax(tf.nn.softmax(logits), 1)
 
             # train_op
             loss_to_minimize = self.loss
@@ -134,15 +134,20 @@ class CNN(object):
         error_list = []
         error_label = []
         to_return = {
-            'predictions': self.best_output
+            'sigmoid_output': self.sigmoid_score
         }
         results = sess.run(to_return, feed_dict)
         right = 0
         for i in range(len(batch.labels)):
-            if results['predictions'][i] == batch.labels[i]:
+            if results['sigmoid_output'][i] > 0.5:
+                prediction = 1
+            else:
+                prediction = 0
+
+            if prediction == batch.labels[i]:
                 right += 1
 
-            error_label.append(results['predictions'][i])
+            error_label.append(prediction)
             error_list.append(batch.headlines[i])
 
         return right, len(batch.labels), error_list, error_label
