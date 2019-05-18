@@ -79,7 +79,9 @@ def main(opt):
     positive_negative_path = os.path.join(opt.data_dir, opt.data_file)
     positive_list, negative_list = load_positive_negative(positive_negative_path, N=80000)
 
-    output_path = os.path.join(opt.data_dir, opt.output_file)
+    if not os.path.isdir(opt.output_dir):
+        os.mkdir(opt.output_dir)
+    output_path = os.path.join(opt.output_dir, opt.output_file)
     store_output(positive_list+neutral_list+negative_list, output_path)
 
 
