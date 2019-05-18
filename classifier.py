@@ -74,15 +74,14 @@ class CNN(object):
             # Fully connected layer
             with tf.variable_scope('output_layer'):
                 # Weight for final layer
-                W = tf.get_variable('W', [3 * self.n_filters, self.num_classes],
+                W = tf.get_variable('W', [3 * self.n_filters, 1],
                                     dtype=tf.float32, initializer=self.trunc_norm_init)
-                b = tf.get_variable('b', [self.num_classes], dtype=tf.float32, initializer=self.trunc_norm_init)
-                # b = tf.Variable(tf.constant(0.1, shape=[1, 2]), dtype=tf.float32)
+                b = tf.get_variable('b', [1], dtype=tf.float32, initializer=self.trunc_norm_init)
 
                 logits = tf.nn.xw_plus_b(zd, W, b)
-                self.sigmoid_score = tf.nn.sigmoid(logits)
+                self.sigmoid_score = tf.squeeze(tf.nn.sigmoid(logits))
 
-            losses = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=self.labels)
+            losses = tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=self.labels)
             self.global_step = tf.Variable(0, name='global_step', trainable=False)
             self.loss = tf.reduce_mean(losses)
             self.best_output = tf.argmax(tf.nn.softmax(logits), 1)
@@ -159,4 +158,4 @@ class CNN(object):
         }
         results = sess.run(to_return, feed_dict)
 
-        return batch.headlines, results['sigmoid_output']
+        return batch.headlines, results['sigmoid_output'][0]

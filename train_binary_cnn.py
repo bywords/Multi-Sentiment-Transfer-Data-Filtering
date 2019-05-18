@@ -27,8 +27,7 @@ tf.app.flags.DEFINE_string('neutral_file_filtering', 'neutral_filtered.txt', 'Da
 tf.app.flags.DEFINE_string('vocab_path', 'data/vocab.txt', 'Path expression to text vocabulary file.')
 
 # Important settings
-tf.app.flags.DEFINE_string('mode', 'train',
-                           'must be train')  # train-classification  train-sentiment  train-cnn-classificatin train-generator
+tf.app.flags.DEFINE_string('mode', 'train', 'must be train')
 tf.app.flags.DEFINE_integer('num_class', 2, 'Number of style classes')
 
 # Where to save output
@@ -39,30 +38,29 @@ tf.app.flags.DEFINE_string('exp_name', 'evaluation',
 tf.app.flags.DEFINE_integer('gpuid', 1, 'for gradient clipping')
 
 tf.app.flags.DEFINE_integer('max_enc_seq_len', 20,
-                            'max timesteps of encoder (max source text tokens)')  # for discriminator
+                            'max timesteps of encoder (max source text tokens)')
 
 # Hyperparameters
-tf.app.flags.DEFINE_integer('hidden_dim', 256, 'dimension of RNN hidden states')  # for discriminator and generator
-tf.app.flags.DEFINE_integer('emb_dim', 128, 'dimension of word embeddings')  # for discriminator and generator
-tf.app.flags.DEFINE_integer('batch_size', 64, 'minibatch size')  # for discriminator and generator
+tf.app.flags.DEFINE_integer('hidden_dim', 256, 'dimension of RNN hidden states')
+tf.app.flags.DEFINE_integer('emb_dim', 128, 'dimension of word embeddings')
+tf.app.flags.DEFINE_integer('batch_size', 64, 'minibatch size')
 # The values are specified by statistics
-tf.app.flags.DEFINE_integer('max_enc_steps', 20,
-                            'max timesteps of encoder (max source text tokens)')  # for generator
-tf.app.flags.DEFINE_integer('max_dec_steps', 20,
-                            'max timesteps of decoder (max summary tokens)')  # for generator
+tf.app.flags.DEFINE_integer('max_epochs', 20, 'Max number of epochs in training')
+tf.app.flags.DEFINE_integer('max_enc_steps', 20, 'max timesteps of encoder (max source text tokens)')
+tf.app.flags.DEFINE_integer('max_dec_steps', 20, 'max timesteps of decoder (max summary tokens)')
 tf.app.flags.DEFINE_integer('min_dec_steps', 10,
                             'Minimum sequence length of generated summary. Applies only for beam search decoding mode')
 tf.app.flags.DEFINE_integer('vocab_size', 10000,
                             'Size of vocabulary. These will be read from the vocabulary file in order. If the vocabulary file contains fewer words than this number, or if this number is set to 0, will take all words in the vocabulary file.')
 
-tf.app.flags.DEFINE_float('lr', 0.6, 'learning rate')  # for discriminator and generator
+tf.app.flags.DEFINE_float('lr', 0.6, 'learning rate')
 tf.app.flags.DEFINE_float('adagrad_init_acc', 0.1,
-                          'initial accumulator value for Adagrad')  # for discriminator and generator
+                          'initial accumulator value for Adagrad')
 tf.app.flags.DEFINE_float('rand_unif_init_mag', 0.02,
-                          'magnitude for lstm cells random uniform inititalization')  # for discriminator and generator
+                          'magnitude for lstm cells random uniform inititalization')
 tf.app.flags.DEFINE_float('trunc_norm_init_std', 1e-4,
-                          'std of trunc norm init, used for initializing everything else')  # for discriminator and generator
-tf.app.flags.DEFINE_float('max_grad_norm', 2.0, 'for gradient clipping')  # for discriminator and generator
+                          'std of trunc norm init, used for initializing everything else')
+tf.app.flags.DEFINE_float('max_grad_norm', 2.0, 'for gradient clipping')
 
 
 def setup_training_cnnclassifier(model):
@@ -162,7 +160,6 @@ def main(unused_argv):
         os.makedirs(FLAGS.log_root)
 
     config = {
-        'n_epochs': 5,
         'kernel_sizes': [3, 4, 5],
         'edim': FLAGS.emb_dim,
         'n_words': FLAGS.vocab_size,
@@ -180,7 +177,7 @@ def main(unused_argv):
 
     hparam_list = ['lr', 'adagrad_init_acc', 'rand_unif_init_mag', 'trunc_norm_init_std', 'max_grad_norm',
                    'hidden_dim', 'emb_dim', 'batch_size', 'max_dec_steps', 'max_enc_steps', 'source_class', 'num_class',
-                   'data_dir', 'train_file', 'test_file', 'neutral_file', 'neutral_file_filtering']
+                   'data_dir', 'train_file', 'test_file', 'neutral_file', 'neutral_file_filtering', 'max_epochs']
     hps_dict = {}
     for key, val in FLAGS.__flags.items():  # for each flag
         if key in hparam_list:  # if it's in the list
@@ -200,7 +197,7 @@ def main(unused_argv):
     run_train_cnn_classifier(model=cnn_classifier,
                              train_batcher=train_batcher,
                              test_batcher=test_batcher,
-                             max_run_epoch=20,
+                             max_run_epoch=hps_discriminator.max_epochs,
                              sess=sess_cnn_cls,
                              saver=saver_cnn_cls,
                              train_dir=train_dir_cnn_cls)
