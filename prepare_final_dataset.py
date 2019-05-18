@@ -61,7 +61,7 @@ def store_output(data_list, output_path):
         ys.append(y)
 
     with open(output_path, 'w', encoding='utf-8') as f:
-        print("stars", end='\t', file=f)
+        print("score", end='\t', file=f)
         print("text", file=f)
 
         for dic in data_list:
