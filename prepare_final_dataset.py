@@ -68,8 +68,8 @@ def store_output(data_list, output_path):
             y = dic['score']
             X = dic['headline']
 
-            print(X, end='\t', file=f)
-            print(y, file=f)
+            print(y, end='\t', file=f)
+            print(X, file=f)
 
 
 def main(opt):
