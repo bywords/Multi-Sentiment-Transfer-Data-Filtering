@@ -145,6 +145,7 @@ def filter_neutral_data(batcher, model, sess, hps):
             for idx, headline in enumerate(headlines):
                 sigmoid_score = scores[idx]
                 json.dump(dict(output=float(sigmoid_score), headline=headline), fp=f_filter)
+                print(file=f_filter)
 
 
 def main(unused_argv):
