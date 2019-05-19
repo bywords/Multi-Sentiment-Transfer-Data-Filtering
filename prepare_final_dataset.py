@@ -78,7 +78,7 @@ def store_output(data_list, output_path):
 def main(opt):
 
     neutral_path = os.path.join(opt.data_dir, opt.neutral_file)
-    neutral_list = filter_neutral_by_confidence(neutral_path, N=80000)
+    neutral_list = filter_neutral_by_confidence(neutral_path, N=80000, filter=opt.filter is 1)
     positive_negative_path = os.path.join(opt.data_dir, opt.data_file)
     positive_list, negative_list = load_positive_negative(positive_negative_path, N=80000)
 
