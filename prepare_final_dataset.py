@@ -1,7 +1,6 @@
 import os, json
 import random
 import argparse
-from sklearn.model_selection import train_test_split
 
 random.seed(20180422)
 
@@ -11,9 +10,10 @@ parser.add_argument('-output_dir', default="output", help='Final output path')
 parser.add_argument('-data_file', default="train.txt", help='Data file of negative and positive sentiments')
 parser.add_argument('-neutral_file', default="neutral_filtered.txt", help='Neutral review with prediction scores')
 parser.add_argument('-output_file', required=True, help='Final output data')
+parser.add_argument('-filter', required=True, help='1: True 0: False')
 
 
-def filter_neutral_by_confidence(path, N):
+def filter_neutral_by_confidence(path, N, filter):
     neutral_data = []
     with open(path, 'r', encoding='utf-8') as f:
         for string_ in f:
@@ -26,6 +26,9 @@ def filter_neutral_by_confidence(path, N):
             neutral_data.append((headline, conf_value))
 
     neutral_list_dic = []
+    if not filter:
+        random.shuffle(neutral_data)
+
     for headline, conf_value in sorted(neutral_data, key=lambda x: x[1])[:N]:
         neutral_list_dic.append(dict(score=1, headline=headline))
 
